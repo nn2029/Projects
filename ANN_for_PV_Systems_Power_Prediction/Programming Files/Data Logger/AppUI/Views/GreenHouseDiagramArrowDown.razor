@@ -1,0 +1,13 @@
+﻿@*<StackLayout GridRow="GridRow" GridColumn="GridColumn">
+    <Label FontFamily="@MaterialDesignIcons.FontFamilyName"
+           Text="@MaterialDesignIcons.ArrowDown"
+           FontSize="24"
+           CssClass="secondary"
+           HorizontalTextAlignment="XF.TextAlignment.Center"
+           HorizontalOptions="XF.LayoutOptions.CenterAndExpand"></Label>
+</StackLayout>*@
+
+@code{
+    [Parameter] public int GridRow { get; set; }
+    [Parameter] public int GridColumn { get; set; }
+}

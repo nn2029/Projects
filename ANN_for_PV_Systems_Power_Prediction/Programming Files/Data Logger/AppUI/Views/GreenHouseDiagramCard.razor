@@ -1,0 +1,50 @@
+﻿@inherits BaseComponent
+
+@*<Frame CornerRadius="10"
+       Padding="5"
+       Margin="Margin"
+       HeightRequest="100"
+       GridRow="GridRow"
+       GridColumn="GridColumn">
+    <Label Text="@Title"
+           HorizontalTextAlignment="XF.TextAlignment.Center"
+           FontSize="14"
+           TranslationY="0"></Label>
+    @if (Icon != null)
+    {
+        <Label FontFamily="@MaterialDesignIcons.FontFamilyName"
+               Text="@Icon"
+               FontSize="50"
+               TranslationY="-5"
+               HorizontalOptions="XF.LayoutOptions.Center"
+               CssClass="primary"></Label>
+    }
+    else
+    {
+        @IconView
+    }
+    @if (Value != null)
+    {
+        <Label Text="@Value"
+               FontSize="14"
+               FontAttributes="XF.FontAttributes.Bold"
+               HorizontalTextAlignment="XF.TextAlignment.Center"></Label>
+    }
+    else if (BindValue != null)
+    {
+        <Label BindText="@(BindValue??Binding(this, vm=>vm, v=>Value))"
+               FontSize="14"
+               FontAttributes="XF.FontAttributes.Bold"
+               HorizontalTextAlignment="XF.TextAlignment.Center"></Label>
+    }
+</Frame>*@
+
+@code{
+    [Parameter] public string Title { get; set; }
+    [Parameter] public string Value { get; set; }
+    [Parameter] public string Icon { get; set; }
+    [Parameter] public RenderFragment IconView { get; set; }
+    [Parameter] public int GridRow { get; set; }
+    [Parameter] public int GridColumn { get; set; }
+    [Parameter] public int Margin { get; set; }
+}

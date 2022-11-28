@@ -1,0 +1,153 @@
+﻿@inherits ApplicationPageBaseOfViewModel<GreenHouseLoggerHistoryViewModel>
+@using LivingThing.Core.IOT.Client.Devices.GreenHouseLogger.ViewModels
+
+@*<ContentPage @ref="page">
+    <DeviceBanner TDevice="GreenHouseLoggerDevice" ViewModel="ViewModel">
+        <FlexLayout Direction="XF.FlexDirection.Row"
+                    JustifyContent="XF.FlexJustify.SpaceBetween"
+                    AlignContent="XF.FlexAlignContent.Center">
+            <Button CssClass="Menu round"
+                    FontFamily="@MaterialDesignIcons.FontFamilyName"
+                    Text="@MaterialDesignIcons.ChevronLeft"
+                    OnCommand="PreviousPage"></Button>
+            <StackLayout>
+                <Label Text="@($"History {(loading ? "loading": $"from {StartDate.ToString("d/M/yyyy")}")}")" CssClass="title"
+                       TextColor="XF.Color.White"
+                       HorizontalTextAlignment="XF.TextAlignment.Center"></Label>
+                <Label Text="@($"Page {pageNumber+1} of {PageCount}{(Error!=null?$" - {Error}":"")}")"
+                       CssClass="small"
+                       TextColor="XF.Color.White"
+                       HorizontalTextAlignment="XF.TextAlignment.Center"></Label>
+            </StackLayout>
+            <Button CssClass="Menu round"
+                    FontFamily="@MaterialDesignIcons.FontFamilyName"
+                    Text="@MaterialDesignIcons.ChevronRight"
+                    OnCommand="NextPage"></Button>
+        </FlexLayout>
+    </DeviceBanner>
+    <Loading Enable="loading" Overlay="true">
+        <CarouselView ItemsSource="@(new int[]{0, 1})">
+            <DataTemplateT T="int" Property="ItemTemplate">
+                @if (context == 0)
+                {
+                    <ScrollView>
+                        <Label Text="Solar Voltage(V)" CssClass="subtitle"
+                               TextColor="ToXColor(SolarVoltageColor)"
+                               Margin="Thickness(10,0,0,0)"></Label>
+                        <ChartView HeightRequest="200" Margin="Thickness(0,0,0,10)">
+                            <LineChart Entries="SolarVoltageEntries" IsAnimated="animate"></LineChart>
+                        </ChartView>
+                        <Label Text="Solar Current(A)" CssClass="subtitle"
+                               TextColor="ToXColor(SolarCurrentColor)"
+                               Margin="Thickness(10,0,0,0)"></Label>
+                        <ChartView HeightRequest="200" Margin="Thickness(0,0,0,10)">
+                            <LineChart Entries="SolarCurrentEntries" IsAnimated="animate"></LineChart>
+                        </ChartView>
+                        <Label Text="Battery Voltage(V)" CssClass="subtitle"
+                               TextColor="ToXColor(BatteryVoltageColor)"
+                               Margin="Thickness(10,0,0,0)"></Label>
+                        <ChartView HeightRequest="200" Margin="Thickness(0,0,0,10)">
+                            <LineChart Entries="BatteryVoltageEntries" IsAnimated="animate"></LineChart>
+                        </ChartView>
+                        <Label Text="Inverter Current(A)" CssClass="subtitle"
+                               TextColor="ToXColor(InverterCurrentColor)"
+                               Margin="Thickness(10,0,0,0)"></Label>
+                        <ChartView HeightRequest="200" Margin="Thickness(0,0,0,10)">
+                            <LineChart Entries="InverterCurrentEntries" IsAnimated="animate"></LineChart>
+                        </ChartView>
+                        <Grid>
+                            <RowDefinition Height="XF.GridLength.Auto"></RowDefinition>
+                            <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                            <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                            <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                            <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                            <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                            <Label Text="Time" CssClass="subtitle primary" GridColumn="0"></Label>
+                            <Label Text="Solar Voltage(V)" CssClass="subtitle primary" GridColumn="1" TextColor="ToXColor(SolarVoltageColor)"></Label>
+                            <Label Text="Solar Current(A)" CssClass="subtitle primary" GridColumn="2" TextColor="ToXColor(SolarCurrentColor)"></Label>
+                            <Label Text="Battery Voltage(V)" CssClass="subtitle primary" GridColumn="3" TextColor="ToXColor(BatteryVoltageColor)"></Label>
+                            <Label Text="Inverter Current(A)" CssClass="subtitle primary" GridColumn="4" TextColor="ToXColor(InverterCurrentColor)"></Label>
+                        </Grid>
+                        <ListView ItemsSource="InstantLogs" HasUnevenRows="true" ItemTapped="OnTapped">
+                            <DataTemplate Property="ItemTemplate">
+                                <ViewCellT T="Models.InstantLog" Context="log">
+                                    <Grid>
+                                        <RowDefinition Height="XF.GridLength.Auto"></RowDefinition>
+                                        <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                                        <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                                        <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                                        <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                                        <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                                        <Label Text="@log.Time.ToString()" CssClass="subtitle secondary"
+                                               FontSize="11"
+                                               Margin="Thickness(5,0)"
+                                               GridColumn="0"></Label>
+                                        <Label Text="@log.SolarVoltage.ToString("f")" GridColumn="1" VerticalTextAlignment="XF.TextAlignment.Center"></Label>
+                                        <Label Text="@log.SolarCurrent.ToString("f")" GridColumn="2" VerticalTextAlignment="XF.TextAlignment.Center"></Label>
+                                        <Label Text="@log.BatteryVoltage.ToString("f")" GridColumn="3" VerticalTextAlignment="XF.TextAlignment.Center"></Label>
+                                        <Label Text="@log.InverterCurrent.ToString("f")" GridColumn="4" VerticalTextAlignment="XF.TextAlignment.Center"></Label>
+                                    </Grid>
+                                </ViewCellT>
+                            </DataTemplate>
+                        </ListView>
+                    </ScrollView>
+                }
+                else
+                {
+                    <ScrollView>
+                        <Label Text="Daily Solar Energy(Wh)" CssClass="subtitle"
+                               TextColor="ToXColor(SolarEnergyColor)"
+                               Margin="Thickness(10,0,0,0)"></Label>
+                        <ChartView HeightRequest="200" Margin="Thickness(0,0,0,10)">
+                            <LineChart Entries="SolarEnergyEntries" IsAnimated="animate"></LineChart>
+                        </ChartView>
+                        <Label Text="Daily Battery Energy(Wh)" CssClass="subtitle"
+                               TextColor="ToXColor(BatteryEnergyColor)"
+                               Margin="Thickness(10,0,0,0)"></Label>
+                        <ChartView HeightRequest="200" Margin="Thickness(0,0,0,10)">
+                            <LineChart Entries="BatteryEnergyEntries" IsAnimated="animate"></LineChart>
+                        </ChartView>
+                        <Label Text="Daily Inverter Energy(Wh)" CssClass="subtitle"
+                               TextColor="ToXColor(InverterEnergyColor)"
+                               Margin="Thickness(10,0,0,0)"></Label>
+                        <ChartView HeightRequest="200" Margin="Thickness(0,0,0,10)">
+                            <LineChart Entries="InverterEnergyEntries" IsAnimated="animate"></LineChart>
+                        </ChartView>
+                        <Grid>
+                            <RowDefinition Height="XF.GridLength.Auto"></RowDefinition>
+                            <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                            <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                            <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                            <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                            <Label Text="Time" CssClass="subtitle primary" GridColumn="0"></Label>
+                            <Label Text="Solar Energy(Wh)" CssClass="subtitle primary" GridColumn="1" TextColor="ToXColor(SolarEnergyColor)"></Label>
+                            <Label Text="Battery Energy(Wh)" CssClass="subtitle primary" GridColumn="2" TextColor="ToXColor(BatteryEnergyColor)"></Label>
+                            <Label Text="Inverter Energy(Wh)" CssClass="subtitle primary" GridColumn="3" TextColor="ToXColor(InverterEnergyColor)"></Label>
+                        </Grid>
+                        <ListView ItemsSource="DailyLogs" HasUnevenRows="true" ItemTapped="OnTapped">
+                            <DataTemplate Property="ItemTemplate">
+                                <ViewCellT T="Models.DailyLog" Context="log">
+                                    <Grid>
+                                        <RowDefinition Height="XF.GridLength.Auto"></RowDefinition>
+                                        <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                                        <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                                        <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                                        <ColumnDefinition Width="XF.GridLength.Star"></ColumnDefinition>
+                                        <Label Text="@log.Time.ToString()" CssClass="subtitle secondary"
+                                               FontSize="11"
+                                               Margin="Thickness(5,0)"
+                                               GridColumn="0"></Label>
+                                        <Label Text="@log.SolarEnergy.ToString("f")" GridColumn="1" VerticalTextAlignment="XF.TextAlignment.Center"></Label>
+                                        <Label Text="@log.BatteryEnergy.ToString("f")" GridColumn="2" VerticalTextAlignment="XF.TextAlignment.Center"></Label>
+                                        <Label Text="@log.InverterEnergy.ToString("f")" GridColumn="3" VerticalTextAlignment="XF.TextAlignment.Center"></Label>
+                                    </Grid>
+                                </ViewCellT>
+                            </DataTemplate>
+                        </ListView>
+                    </ScrollView>
+                }
+            </DataTemplateT>
+        </CarouselView>
+    </Loading>
+</ContentPage>*@
+

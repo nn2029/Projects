@@ -1,0 +1,56 @@
+﻿@inherits BaseParameterizedComponent<InstantLog>
+@using LivingThing.Core.IOT.Devices.GreenHouseLogger.Models
+ 
+    <b>@ViewModel.Time</b>
+    <div class="row mgt">
+        <div class="col-a text-center">
+            <i class="mdi mdi-solar-panel fsz-30 hx-05 wx-05 round bd stack flex mgc-a bg-secondary"></i>
+        </div>
+        <div class="col-10 stack">
+            <div class="bdb bd-secondary fill text-center row">
+                <div class="col-10 text-center stack">
+                    <div class="fill"></div>
+                    <b>@($"{ViewModel.SolarVoltage}V")</b>
+                </div>
+                <div class="hf bdr bd-secondary" style="transform: translateX(-5px) translateY(5px) rotate(-45deg)"></div>
+            </div>
+            <div class="fill text-center row">
+                <div class="col-10 text-center stack">
+                    <b>@($"{ViewModel.SolarCurrent}A")</b>
+                </div>
+                <div class="hf bdr bd-secondary" style="transform: translateX(-5px) translateY(-5px) rotate(45deg)"></div>
+            </div>
+        </div>
+        <div class="col-a">
+            <i class="mdi mdi-battery fsz-30 hx-05 wx-05 round bd stack flex mgc-a bg-primary"></i>
+        </div>
+        <div class="col-10 stack">
+            <div class="bdb bd-secondary fill text-center row">
+                <div class="col-10 text-center stack">
+                    <div class="fill"></div>
+                    <b>@($"{ViewModel.BatteryVoltage}V")</b>
+                </div>
+                <div class="hf bdr bd-secondary" style="transform: translateX(-5px) translateY(5px) rotate(-45deg)"></div>
+            </div>
+            <div class="fill text-center row">
+                <div class="col-10 text-center stack">
+                    <b>@($"{ViewModel.UsageCurrent}A")</b>
+                </div>
+                <div class="hf bdr bd-secondary" style="transform: translateX(-5px) translateY(-5px) rotate(45deg)"></div>
+            </div>
+        </div>
+        <div class="col-a z-2">
+            <i class="mdi mdi-devices fsz-30 hx-05 wx-05 round bd stack flex mgc-a bg-info"></i>
+        </div>
+    </div>
+    <div class="row">
+        <div class="col-3">
+            <small class="nowrap">Solar Panel</small>
+        </div>
+        <div class="col-3 text-center">
+            <small class="nowrap">Battery</small>
+        </div>
+        <div class="col-3 text-right">
+            <small class="nowrap mgr">Load</small>
+        </div>
+    </div>

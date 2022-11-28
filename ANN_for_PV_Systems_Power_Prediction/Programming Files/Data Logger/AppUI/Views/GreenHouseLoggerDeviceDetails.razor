@@ -1,0 +1,431 @@
+﻿@inherits ApplicationPageBaseOfViewModel<GreenHouseLoggerDetailsViewModel>
+
+@using LivingThing.Core.IOT.Devices.GreenHouseLogger
+@using LivingThing.Core.IOT.Devices.GreenHouseLogger.Models
+@using LivingThing.Core.IOT.Client.Devices.GreenHouseLogger.ViewModels
+@using LivingThing.Core.Frameworks.Client.Components.SVG.FluentBuilder
+@using LivingThing.Core.Frameworks.Client.Components.SVG.Widgets.Doughnut
+@using LivingThing.Core.Frameworks.Client.Components.SVG.Attributes
+
+@{ 
+    var solarVoltage = ViewModel.Device.Settings.CorrectSolarVoltage(ViewModel.Device.Status?.Status?.SolarVoltage ?? 0);
+    var batteryVoltage = ViewModel.Device.Settings.CorrectBatteryVoltage(ViewModel.Device.Status?.Status?.BatteryVoltage ?? 0);
+}
+<DeviceDetailsWrapper TDevice="GreenHouseLoggerDevice" ViewModel="ViewModel">
+    <ChildContent>
+        <Themable Context="theme">
+            @{
+                int size = 100;
+                var angle = 2 * Math.PI / 1.3;
+                double harvestProportion = ViewModel.Device.Status?.Status?.SolarHarvest ?? 0;
+                double usageProportion = Math.Abs(ViewModel.Device.Status?.Status?.UsageCharge ?? 0);
+                double storedProportion = ViewModel.Device.Status?.Status?.BatteryCharge ?? 0;
+                var max = Math.Max(Math.Max(harvestProportion*1.2, Math.Max(usageProportion, storedProportion)), ViewModel.Device.Settings.BatteryCapacity);
+                if (max < 1)
+                    max = 1;
+                harvestProportion /= max;
+                usageProportion /= max;
+                storedProportion /= max;
+                var builder = SVGBuilder.Create(size, size, DimensionUnit.None, true);
+                builder.Group(builder => builder.Doughnut(new DoughnutModel()
+                {
+                    Size = size,
+                    BackgroundColor = theme.Model.CardBackgroundColor,
+                    StrokeWidth = 2.8,
+                    Radius = 0.45,
+                    CoverageAngle = angle,
+                    Sections = new DoughnutSection[]
+                    {
+                        new DoughnutSection
+                        {
+                            Proportion = harvestProportion,
+                            Color = theme.Model.ChartColors[0]
+                        }
+                    }
+                })).Group(builder => builder.Doughnut(new DoughnutModel()
+                {
+                    BackgroundColor = theme.Model.CardBackgroundColor,
+                    StrokeWidth = 2.8,
+                    Size = size,
+                    Radius = 0.4,
+                    CoverageAngle = angle,
+                    Sections = new DoughnutSection[]
+                    {
+                        new DoughnutSection
+                        {
+                            Proportion = usageProportion,
+                            Color = theme.Model.ChartColors[1]
+                        }
+                    }
+                })).Group(builder => builder.Doughnut(new DoughnutModel()
+                {
+                    BackgroundColor = theme.Model.CardBackgroundColor,
+                    StrokeWidth = 2.8,
+                    Size = size,
+                    Radius = 0.35,
+                    CoverageAngle = angle,
+                    Sections = new DoughnutSection[]
+                    {
+                        new DoughnutSection
+                        {
+                            Proportion = storedProportion,
+                            Color = theme.Model.ChartColors[2]
+                        }
+                    }
+                })).Group(builder => builder
+                    .MoveTo(0.5, 0.25)
+                    .Text("Harvest")
+                    .FillColor(theme.Model.ChartColors[0])
+                    .BaseLine(BaseLine.Middle)
+                    .TextAnchor(TextAnchor.Middle)
+                    .Attribute("class", "mdi mdi-sunlight fsz-7")
+                    .MoveTo(0.5, 0.33)
+                    .Text($"{(ViewModel.Device.Status?.Status?.SolarHarvest ?? 0):N2}Ah")
+                    .FillColor(theme.Model.ChartColors[0])
+                    .BaseLine(BaseLine.Middle)
+                    .TextAnchor(TextAnchor.Middle)
+                    .Attribute("class", "fsz-10 fw-bold")
+                ).Group(builder => builder
+                    .MoveTo(0.5, 0.45)
+                    .Text("Usage")
+                    .FillColor(theme.Model.ChartColors[1])
+                    .BaseLine(BaseLine.Middle)
+                    .TextAnchor(TextAnchor.Middle)
+                    .Attribute("class", "mdi mdi-sunlight fsz-7")
+                    .MoveTo(0.5, 0.54)
+                    .Text($"{(ViewModel.Device.Status?.Status?.UsageCharge ?? 0):N2}Ah")
+                    .FillColor(theme.Model.ChartColors[1])
+                    .BaseLine(BaseLine.Middle)
+                    .TextAnchor(TextAnchor.Middle)
+                    .Attribute("class", "fsz-10 fw-bold")
+                ).Group(builder => builder.MoveTo(0.5, 0.67)
+                    .Text("Stored")
+                    .FillColor(theme.Model.ChartColors[2])
+                    .BaseLine(BaseLine.Middle)
+                    .TextAnchor(TextAnchor.Middle)
+                    .Attribute("class", "mdi mdi-sunlight fsz-7")
+                    .MoveTo(0.5, 0.75)
+                    .Text($"{(ViewModel.Device.Status?.Status?.BatteryCharge ?? 0):N2}Ah")
+                    .FillColor(theme.Model.ChartColors[2])
+                    .BaseLine(BaseLine.Middle)
+                    .TextAnchor(TextAnchor.Middle)
+                    .Attribute("class", "fsz-10 fw-bold")
+                );
+            }
+            <div class="pd">
+                <div class="wx-25 mgx-a">
+                    @builder.Build()
+                </div>
+                <div class="mgt grid gap-1 colm-15">
+                    @{
+                       var cards = new[]
+                       {
+                           new
+                           {
+                              Icon = "mdi mdi-battery-50",
+                              Theme = Theme.Primary,
+                              Label = "Battery Voltage",
+                              Value = batteryVoltage,
+                              Unit = "V",
+                              Maximum = 0.0
+                           },
+                           new
+                           {
+                              Icon = $"mdi mdi-battery-{(ViewModel.Device.Status?.Status?.BatteryCurrent>0?"plus":"minus")}",
+                              Theme = Theme.Error,
+                              Label = "Charge/Discharge Current",
+                              Value = ViewModel.Device.Status?.Status?.BatteryCurrent??0,
+                              Unit = "A",
+                              Maximum = 0.0
+                           },
+                           new
+                           {
+                              Icon = "mdi mdi-solar-panel",
+                              Theme = Theme.Secondary,
+                              Label = "Solar Voltage",
+                              Value = solarVoltage,
+                              Unit = "V",
+                              Maximum = 0.0
+                           },
+                           new
+                           {
+                              Icon = "mdi mdi-solar-panel",
+                              Theme = Theme.Error,
+                              Label = "Solar Current",
+                              Value = ViewModel.Device.Status?.Status?.SolarCurrent??0,
+                              Unit = "A",
+                              Maximum = ViewModel.Device.Status?.Status?.MaximumSolarCurrent??0
+                           },
+                           new
+                           {
+                              Icon = "mdi mdi-battery-plus",
+                              Theme = Theme.Info,
+                              Label = "Utility Charging Current",
+                              Value = ViewModel.Device.Status?.Status?.InverterChargeCurrent??0,
+                              Unit = "A",
+                              Maximum = 0.0
+                           },
+                           new
+                           {
+                              Icon = $"mdi mdi-battery-plus",
+                              Theme = Theme.Info,
+                              Label = "Load Current",
+                              Value = ViewModel.Device.Status?.Status?.UsageCurrent??0,
+                              Unit = "A",
+                              Maximum = ViewModel.Device.Status?.Status?.MaximumLoadCurrent??0
+                           }
+                       };
+                    }
+                    @foreach(var card in cards)
+                    {
+                        <Card Features="CardFeatures.Default|CardFeatures.Shadow|CardFeatures.Corner">
+                            <div class="flex">
+                                <i class="@card.Icon mgr mgy-a cl-@card.Theme.ToString().ToLower() fsz-25"></i>
+                                <h2 class="mg-a cl-@card.Theme.ToString().ToLower() text-center">@($"{card.Value:N2}{card.Unit}")</h2>
+                                @if (card.Maximum != 0)                                
+                                {
+                                    <small>@($"{card.Maximum:N2}")</small>
+                                }
+                            </div>
+                            <ProgressBar Progress="50" Theme="@card.Theme" BackgroundTheme="Theme.Tertiary" Class="corner mgt"></ProgressBar>
+                            <span class="text-center d-block mgt">@card.Label</span>
+                        </Card>
+                    }
+                </div>
+            </div>
+        </Themable>
+    </ChildContent>
+</DeviceDetailsWrapper>
+<!--<ContentPage @ref="page">
+    <DeviceBanner TDevice="GreenHouseLoggerDevice" ViewModel="ViewModel">
+        <FlexLayout JustifyContent="XF.FlexJustify.SpaceBetween">
+            <StackLayout>
+                <StackLayout Orientation="XF.StackOrientation.Horizontal">
+                    <Button CssClass="Menu round"
+                            VerticalOptions="XF.LayoutOptions.Center"
+                            FontFamily="@MaterialDesignIcons.FontFamilyName"
+                            BindBackgroundColor="Binding(ViewModel, vm=>vm.Statuses, s=>(ViewModel.Status?.Switch??false)?XF.Color.Orange:XF.Color.Brown)"
+                            BindText="@Binding(ViewModel, vm=>vm.Statuses, s=>(ViewModel.Status?.Switch??false)?MaterialDesignIcons.PowerCycle:MaterialDesignIcons.PowerOn)"
+                            TextColor="XF.Color.White"
+                            OnCommand="()=>ViewModel.Device.Switch(!(ViewModel.Status?.Switch??false))"></Button>
+                    <Button CssClass="Menu round"
+                            VerticalOptions="XF.LayoutOptions.Center"
+                            FontFamily="@MaterialDesignIcons.FontFamilyName"
+                            Text="@MaterialDesignIcons.Restart"
+                            TextColor="XF.Color.White"
+                            BackgroundColor="XF.Color.MediumVioletRed"
+                            OnCommand="ResetEnergy"></Button>
+                    <Button CssClass="Menu round"
+                            VerticalOptions="XF.LayoutOptions.Center"
+                            FontFamily="@MaterialDesignIcons.FontFamilyName"
+                            Text="@MaterialDesignIcons.ChartLine"
+                            TextColor="XF.Color.White"
+                            BackgroundColor="XF.Color.DarkCyan"
+                            OnCommand="History"></Button>
+                </StackLayout>
+                <StackLayout Orientation="XF.StackOrientation.Horizontal">
+                    <Button CssClass="Menu round"
+                            VerticalOptions="XF.LayoutOptions.Center"
+                            FontFamily="@MaterialDesignIcons.FontFamilyName"
+                            Text="@MaterialDesignIcons.Null"
+                            BackgroundColor="XF.Color.Gray"
+                            TextColor="XF.Color.White"
+                            OnCommand="ViewModel.Device.ZeroCurrent"></Button>-->
+@*<Button CssClass="Menu round"
+            VerticalOptions="XF.LayoutOptions.Center"
+            FontFamily="@MaterialDesignIcons.FontFamilyName"
+            Text="@MaterialDesignIcons.Restart"
+            TextColor="XF.Color.White"
+            BackgroundColor="XF.Color.MediumVioletRed"
+            OnCommand="ResetEnergy"></Button>
+    <Button CssClass="Menu round"
+            VerticalOptions="XF.LayoutOptions.Center"
+            FontFamily="@MaterialDesignIcons.FontFamilyName"
+            Text="@MaterialDesignIcons.History"
+            TextColor="XF.Color.White"
+            BackgroundColor="XF.Color.DarkCyan"
+            OnCommand="History"></Button>*@
+<!--</StackLayout>
+            </StackLayout>
+            <StackLayout>
+                <StackLayout Orientation="XF.StackOrientation.Horizontal">
+                    <Label FontFamily="@MaterialDesignIcons.FontFamilyName"
+                           Text="@MaterialDesignIcons.Alarm"
+                           TextColor="XF.Color.White"></Label>
+                    <Label BindText="@Binding(ViewModel, vm=>vm.Status.SystemTime, t=>t.ToString("dd/MM/yyyy HH:mm"))"
+                           FontSize="12"
+                           HorizontalTextAlignment="XF.TextAlignment.Center"
+                           TextColor="XF.Color.White"></Label>
+                </StackLayout>
+                <Button CssClass="small"
+                        BackgroundColor="XF.Color.Purple"
+                        TextColor="XF.Color.White"
+                        Text="Update"
+                        OnCommand="SetTime"></Button>
+            </StackLayout>
+            <StackLayout>
+                <StackLayout Orientation="XF.StackOrientation.Horizontal">
+                    <Label FontFamily="@MaterialDesignIcons.FontFamilyName"
+                           Text="@MaterialDesignIcons.ChartBar"
+                           TextColor="XF.Color.White"></Label>
+                    <Label BindText="@Binding(ViewModel, vm=>vm.Status.LogCount, lc=>$"{((double)lc*100/ViewModel.Status.LogCapacity):0.00}% full")"
+                           FontSize="12"
+                           HorizontalTextAlignment="XF.TextAlignment.Center"
+                           TextColor="XF.Color.White"></Label>
+                </StackLayout>
+                <Button CssClass="small"
+                        BackgroundColor="XF.Color.Red"
+                        TextColor="XF.Color.White"
+                        Text="Clear logs"
+                        OnCommand="ClearLogs"></Button>
+            </StackLayout>
+        </FlexLayout>
+    </DeviceBanner>
+    <ScrollView>
+        <PancakeView BackgroundGradientStartPoint="@(new XF.Point(0,0))"
+                     BackgroundGradientEndPoint="@(new XF.Point(0,1))"
+                     CornerRadius="@(new XF.CornerRadius(10))">
+            <LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStopCollection>
+                <LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop Offset="0f" Color="@XF.Color.FromHex("00BAFC00")"></LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop>
+                <LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop Offset="0.5f" Color="@XF.Color.FromHex("2000FFE0")"></LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop>
+                <LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop Offset="1f" Color="@XF.Color.FromHex("00BAFC00")"></LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop>
+            </LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStopCollection>
+            <PancakeView Padding="Thickness(0, 10)"
+                         BackgroundGradientStartPoint="@(new XF.Point(0,0))"
+                         BackgroundGradientEndPoint="@(new XF.Point(1,0))">
+                <LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStopCollection>
+                    <LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop Offset="0f" Color="@XF.Color.FromHex("00BAFC00")"></LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop>
+                    <LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop Offset="0.5f" Color="@XF.Color.FromHex("2000FFE0")"></LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop>
+                    <LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop Offset="1f" Color="@XF.Color.FromHex("00BAFC00")"></LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStop>
+                </LivingThing.Core.Frameworks.XamarinRazor.Forms.PancakeView.GradientStopCollection>
+                <Grid Padding="Thickness(10,0)" RowSpacing="0" ColumnSpacing="0">
+                    <RowDefinition Height="XF.GridLength.Star"></RowDefinition>
+                    <RowDefinition Height="20"></RowDefinition>
+                    <RowDefinition Height="XF.GridLength.Star"></RowDefinition>
+                    <RowDefinition Height="20"></RowDefinition>
+                    <RowDefinition Height="XF.GridLength.Star"></RowDefinition>
+
+                    <ColumnDefinition Width="@(new XF.GridLength(0.4, XF.GridUnitType.Star))"></ColumnDefinition>
+                    <ColumnDefinition Width="@(new XF.GridLength(0.2, XF.GridUnitType.Star))"></ColumnDefinition>
+                    <ColumnDefinition Width="@(new XF.GridLength(0.4, XF.GridUnitType.Star))"></ColumnDefinition>
+
+                    <GreenHouseDiagramCard Title="Utility Supply"
+                                           Icon="@MaterialDesignIcons.HydroPower"
+                                           Value="220V"
+                                           GridRow="0"
+                                           GridColumn="0"></GreenHouseDiagramCard>
+                    <GreenHouseDiagramArrowDown GridRow="1"
+                                                GridColumn="0"></GreenHouseDiagramArrowDown>
+                    <GreenHouseDiagramCard Title="Inverter"
+                                           Icon="@MaterialDesignIcons.WashingMachine"
+                                           GridRow="2"
+                                           GridColumn="0"></GreenHouseDiagramCard>
+                    <GreenHouseDiagramArrowDown GridRow="3"
+                                                GridColumn="0"></GreenHouseDiagramArrowDown>
+                    <GreenHouseDiagramCard Title="Home"
+                                           Icon="@MaterialDesignIcons.Home"
+                                           GridRow="4"
+                                           GridColumn="0"
+                                           Margin="Thickness(0,0,0,5)"></GreenHouseDiagramCard>
+
+
+                    <StackLayout GridRow="0"
+                                 GridColumn="1"
+                                 Spacing="0"
+                                 Rotation="20"
+                                 Orientation="XF.StackOrientation.Horizontal">
+                        <Label FontFamily="@MaterialDesignIcons.FontFamilyName"
+                               Text="@MaterialDesignIcons.WeatherSunny"
+                               FontSize="40"
+                               VerticalOptions="XF.LayoutOptions.Center"
+                               VerticalTextAlignment="XF.TextAlignment.Center"
+                               CssClass="primary"></Label>
+                        <StackLayout VerticalOptions="XF.LayoutOptions.Center">
+                            <Label FontFamily="@MaterialDesignIcons.FontFamilyName"
+                                   Text="@MaterialDesignIcons.ArrowRight"
+                                   FontSize="15"
+                                   CssClass="secondary"></Label>
+                            <Label FontFamily="@MaterialDesignIcons.FontFamilyName"
+                                   Text="@MaterialDesignIcons.ArrowRight"
+                                   FontSize="15"
+                                   CssClass="secondary"></Label>
+                            <Label FontFamily="@MaterialDesignIcons.FontFamilyName"
+                                   Text="@MaterialDesignIcons.ArrowRight"
+                                   FontSize="15"
+                                   CssClass="secondary"></Label>
+                        </StackLayout>
+                    </StackLayout>
+
+                    <GreenHouseDiagramCard Title="Solar Panel"
+                                           Icon="@MaterialDesignIcons.SolarPanelLarge"
+                                           BindValue="@Binding(ViewModel, vm=>vm.Status.SolarVoltage, v=>$"{v:0.0}V, {ViewModel.Status.SolarCurrent:0.0}A, {(ViewModel.Status.SolarVoltage*ViewModel.Status.SolarCurrent):0}W")"
+                                           GridRow="0"
+                                           GridColumn="2"></GreenHouseDiagramCard>
+                    <GreenHouseDiagramArrowDown GridRow="1"
+                                                GridColumn="2"></GreenHouseDiagramArrowDown>
+                    <GreenHouseDiagramCard Title="Charge Controller"
+                                           Icon="@MaterialDesignIcons.NetworkRouter"
+                                           BindValue="@Binding(ViewModel, vm=>vm.Status.BatteryVoltage, v=>$"{v:0.0}V, {ViewModel.Status.SolarCurrent:0.0}A, {(ViewModel.Status.BatteryVoltage*ViewModel.Status.SolarCurrent):0}W")"
+                                           GridRow="2"
+                                           GridColumn="2"></GreenHouseDiagramCard>
+                    <GreenHouseDiagramArrowDown GridRow="3"
+                                                GridColumn="2"></GreenHouseDiagramArrowDown>
+                    <GreenHouseDiagramCard Title="Battery"
+                                           Icon="@MaterialDesignIcons.Battery"
+                                           BindValue="@Binding(ViewModel, vm=>vm.Status.BatteryEnergy, v=>$"Charged {(v/ViewModel.Status.BatteryVoltage):0.0}Ah")"
+                                           GridRow="4"
+                                           GridColumn="2"
+                                           Margin="Thickness(0,0,0,5)"></GreenHouseDiagramCard>
+
+                    <StackLayout GridRow="2"
+                                 GridColumn="1"
+                                 GridrowSpan="3">
+                        <Path Stroke="@(new XF.SolidColorBrush(XF.Color.FromHex("#2cb3b8")))" StrokeThickness="3">
+                            <PathGeometry>
+                                <PathFigure StartPoint="Point(100, 180)">
+                                    <LineSegment Point="Point(40, 180)"></LineSegment>
+                                    <LineSegment Point="Point(40,55)"></LineSegment>
+                                    <LineSegment Point="Point(0,55)"></LineSegment>
+                                </PathFigure>
+                            </PathGeometry>
+                        </Path>
+                    </StackLayout>
+
+                </Grid>
+            </PancakeView>
+        </PancakeView>
+        <PancakeView>
+            <Border></Border>
+            <FlexLayout Direction="XF.FlexDirection.Row" JustifyContent="XF.FlexJustify.SpaceBetween" Padding="10">
+                <GreenHouseStatus Icon="@MaterialDesignIcons.SolarPanel"
+                                  Label="Solar Voltage"
+                                  BindValue="@Binding(ViewModel, vm=>vm.Status.SolarVoltage, v=>$"{v:0.00}V")"></GreenHouseStatus>
+                <GreenHouseStatus Icon="@MaterialDesignIcons.Battery"
+                                  Label="Battery Voltage"
+                                  BindValue="@Binding(ViewModel, vm=>vm.Status.BatteryVoltage, v=>$"{v:0.00}V")"></GreenHouseStatus>
+            </FlexLayout>
+            <FlexLayout Direction="XF.FlexDirection.Row" JustifyContent="XF.FlexJustify.SpaceBetween" Padding="10">
+                <GreenHouseStatus Icon="@MaterialDesignIcons.SolarPower"
+                                  Label="Solar Current"
+                                  BindValue="@Binding(ViewModel, vm=>vm.Status.SolarCurrent, v=>$"{v:0.00}A")"></GreenHouseStatus>
+                <GreenHouseStatus Icon="@MaterialDesignIcons.Home"
+                                  Label="Inverter Current"
+                                  BindValue="@Binding(ViewModel, vm=>vm.Status.InverterCurrent, v=>$"{v:0.00}A")"></GreenHouseStatus>
+                <GreenHouseStatus Icon="@MaterialDesignIcons.BatteryCharging"
+                                  Label="Battery Current"
+                                  BindValue="@Binding(ViewModel, vm=>vm.Status.BatteryCurrent, v=>$"{v:0.00}A")"></GreenHouseStatus>
+            </FlexLayout>
+            <FlexLayout Direction="XF.FlexDirection.Row" JustifyContent="XF.FlexJustify.SpaceBetween" Padding="10">
+                <GreenHouseStatus Icon="@MaterialDesignIcons.SolarPanelLarge"
+                                  Label="Solar Energy"
+                                  BindValue="@Binding(ViewModel, vm=>vm.Status.SolarEnergy, v=>$"{v:0.00}Wh")"></GreenHouseStatus>
+                <GreenHouseStatus Icon="@MaterialDesignIcons.HomeAccount"
+                                  Label="Inverter Energy"
+                                  BindValue="@Binding(ViewModel, vm=>vm.Status.LoadEnergy, v=>$"{v:0.00}Wh")"></GreenHouseStatus>
+                <GreenHouseStatus Icon="@MaterialDesignIcons.BatteryHeart"
+                                  Label="Battery Energy"
+                                  BindValue="@Binding(ViewModel, vm=>vm.Status.BatteryEnergy, v=>$"{v:0.00}Wh")"></GreenHouseStatus>
+            </FlexLayout>
+        </PancakeView>
+    </ScrollView>
+</ContentPage>-->

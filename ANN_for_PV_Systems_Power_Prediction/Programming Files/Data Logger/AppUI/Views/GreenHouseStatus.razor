@@ -1,0 +1,16 @@
+﻿@*<StackLayout>
+        <Label CssClass="primary title" BindText="BindValue"
+               FontSize="20"
+               HorizontalTextAlignment="XF.TextAlignment.Center"></Label>
+    <BoxView HeightRequest="0.5" Color="XF.Color.LightGray"></BoxView>
+    <Label Text="@Label"
+           HorizontalTextAlignment="XF.TextAlignment.Center"
+           FontAttributes="XF.FontAttributes.Italic"
+           CssClass="text-muted"></Label>
+</StackLayout>*@
+
+@code{
+    [Parameter] public string Icon { get; set; }
+    [Parameter] public string Value { get; set; }
+    [Parameter] public string Label { get; set; }
+}
