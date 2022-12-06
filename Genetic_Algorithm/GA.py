@@ -70,7 +70,7 @@ def ga(func, bounds, num_dims, iters, pop_size, cross_rate, mut_rate , k):
         selected = [tournament(pop, scores, k) for _ in range(pop_size)]
         # reproduction
         children = list()
-        for i in range(min, pop_size, max):
+        for i in range(0, pop_size, 2):
             # get selected parents in pairs
             p1, p2 = selected[i], selected[i + 1]
             # perform crossover and mutation
