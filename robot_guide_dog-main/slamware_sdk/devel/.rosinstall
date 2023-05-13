@@ -1,0 +1,2 @@
+- setup-file:
+    local-name: /home/marc/slam_ws/src/slamware_sdk/devel/setup.sh
