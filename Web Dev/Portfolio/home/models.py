@@ -7,3 +7,6 @@ class Contact(models.Model):
     email = models.EmailField()
     phone_number =models.CharField(max_length=30)
     desc = models.TextField()
+
+    def __str__(self) -> str:
+        return self.name
