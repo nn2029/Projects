@@ -1,5 +1,5 @@
 from django.shortcuts import render, HttpResponse
-
+from home.models import Contact
 
 # Create your views here.
 def home(request):
@@ -16,6 +16,15 @@ def projects(request):
 
 
 def contact(request):
+    if request.method=="POST":
+        name = request.POST['name']
+        email = request.POST['email']
+        phone_number = request.POST['phone_number']
+        desc = request.POST['desc']
+        
+        ins = Contact(name=name , email=email , phone_number=phone_number, desc=desc)
+        ins.save()
+        print("database updated")
     return render(request, "contact.html")
 
 
