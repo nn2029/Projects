@@ -23,7 +23,7 @@ B.Eng. - Computer Engineering: Afe Babalola University, Ado-Ekiti, Nigeria (Sep 
 English (Fluent)
 🔗 Get in Touch:
 
-📧 Email: nasirnairameen@gmail.com
+📧 Email: nasirnasirameen@gmail.com
 nasirameennasir@gmail.com
 📞 Phone: +971501303448
 Thank you for exploring my repository! Your feedback and collaboration opportunities are always welcome. Let's innovate together!
