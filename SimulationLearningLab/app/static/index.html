@@ -1,0 +1,91 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Simulation Learning Lab</title>
+  <link rel="stylesheet" href="/static/styles.css" />
+</head>
+<body>
+  <header class="topbar">
+    <div class="brand"><span class="brand-mark">SLL</span><div><strong>Simulation Learning Lab</strong><small>Multimodal learning workbench</small></div></div>
+    <div class="top-actions"><span id="providerBadge" class="chip">Checking AI…</span><button id="newLab" class="secondary">New lab</button></div>
+  </header>
+
+  <main class="product-shell">
+    <aside class="sidebar panel">
+      <div class="sidebar-head"><div><span class="eyebrow">WORKSPACE</span><h2>Your labs</h2></div><button id="refreshLabs" class="icon-btn" title="Refresh">↻</button></div>
+      <div id="sessionList" class="session-list"><p class="muted">Loading labs…</p></div>
+    </aside>
+
+    <section class="main-column">
+      <section id="welcome" class="hero-card panel">
+        <span class="eyebrow">BUILD A MENTAL MODEL</span>
+        <h1>Turn a concept, screenshot or video into something you can explore.</h1>
+        <p>Upload source material, extract evidence, generate a causal simulation, test the mechanism and revisit what you missed.</p>
+      </section>
+
+      <section id="composer" class="panel composer">
+        <div class="section-title"><span class="step">NEW</span><div><h2>Create a learning lab</h2><p>Start from a topic, media, or both.</p></div></div>
+        <div class="field wide"><label for="topic">Concept or question</label><textarea id="topic" rows="3" placeholder="e.g. Reconstruct what this screen recording is teaching about a transformer and make me predict each stage."></textarea></div>
+        <div class="field"><label for="level">Depth</label><select id="level"><option value="intuitive">Intuitive</option><option value="practitioner" selected>Practitioner</option><option value="interview">Interview</option><option value="academic">Academic</option><option value="expert refresher">Expert refresher</option></select></div>
+        <div class="field"><label for="outcome">Learning outcome</label><input id="outcome" placeholder="Predict, diagnose, calculate, explain…" /></div>
+        <div class="dropzone wide" id="dropzone" tabindex="0"><input id="files" type="file" accept="image/*,video/mp4,video/quicktime,video/webm,video/x-matroska" multiple hidden /><strong>Drop images or videos here</strong><span>or click to choose · up to 500 MB each</span></div>
+        <div id="fileList" class="file-list wide"></div>
+        <div class="actions wide"><button id="prepare">Create lab</button><span id="status" class="status"></span></div>
+      </section>
+
+      <section id="workspace" class="workspace hidden">
+        <section class="panel workspace-head">
+          <div><span id="workspaceStatus" class="eyebrow">PREPARED</span><h1 id="workspaceTitle">Untitled lab</h1><p id="workspaceOutcome"></p></div>
+          <div class="workspace-actions">
+            <button id="enrich" class="secondary">OCR + transcript</button>
+            <button id="generate">Generate with AI</button>
+            <button id="compile" class="secondary">Compile</button>
+            <a id="previewLink" class="button-link secondary disabled" target="_blank" rel="noopener">Open runtime</a>
+            <a id="exportLink" class="button-link secondary disabled">Export ZIP</a>
+          </div>
+          <div id="workspaceMessage" class="status wide"></div>
+        </section>
+
+        <nav class="tabs" aria-label="Lab sections">
+          <button class="tab active" data-tab="evidence">Evidence</button>
+          <button class="tab" data-tab="plan">Plan</button>
+          <button class="tab" data-tab="author">Author</button>
+          <button class="tab" data-tab="preview">Preview</button>
+        </nav>
+
+        <section id="tab-evidence" class="tab-panel active">
+          <article class="panel"><div class="section-head"><div><span class="step">01</span><h2>Evidence intake</h2></div><span id="summaryChip" class="chip"></span></div><div id="mediaGrid" class="media-grid"></div></article>
+        </section>
+
+        <section id="tab-plan" class="tab-panel">
+          <article class="panel"><div class="section-head"><div><span class="step">02</span><h2>Learning pipeline</h2></div></div><div id="pipeline" class="pipeline"></div></article>
+          <article class="panel"><div class="section-head"><div><span class="step">03</span><h2>Agent handoff</h2></div><button class="secondary" id="copyPrompt">Copy prompt</button></div><pre id="prompt"></pre></article>
+        </section>
+
+        <section id="tab-author" class="tab-panel">
+          <article class="panel">
+            <div class="section-head"><div><span class="step">04</span><h2>Simulation author</h2></div><div class="button-row"><button id="saveAuthor" class="secondary">Save changes</button><button id="formatSpec" class="secondary">Format JSON</button></div></div>
+            <div class="author-grid">
+              <div class="field"><label>Title</label><input id="authorTitle" /></div>
+              <div class="field"><label>Visual grammar</label><select id="authorGrammar"><option>state-machine</option><option>factory</option><option>isometric-town</option><option>circuit</option><option>agent-field</option><option>timeline</option><option>robot-world</option><option>layer-stack</option></select></div>
+              <div class="field wide"><label>Learning objective</label><textarea id="authorObjective" rows="2"></textarea></div>
+            </div>
+            <div class="author-section-head"><div><h3>Entities</h3><p>What the learner should keep track of.</p></div><button id="addEntity" class="secondary">Add entity</button></div>
+            <div id="entityEditor" class="editor-list"></div>
+            <div class="author-section-head"><div><h3>Stages</h3><p>Ordered transformations, state changes and retrieval prompts.</p></div><button id="addStage" class="secondary">Add stage</button></div>
+            <div id="stageEditor" class="editor-list"></div>
+            <details class="raw-details"><summary>Advanced JSON editor</summary><textarea id="specEditor" class="spec-editor" spellcheck="false"></textarea></details>
+          </article>
+        </section>
+
+        <section id="tab-preview" class="tab-panel">
+          <article class="panel"><div class="section-head"><div><span class="step">05</span><h2>Interactive runtime</h2></div><button id="reloadPreview" class="secondary">Reload preview</button></div><div id="previewEmpty" class="empty-state"><strong>Compile the simulation to preview it here.</strong><p>The runtime will appear without leaving the workspace.</p></div><iframe id="previewFrame" class="preview-frame hidden" title="Simulation preview"></iframe></article>
+        </section>
+      </section>
+    </section>
+  </main>
+  <script src="/static/app.js"></script>
+</body>
+</html>
